@@ -19,8 +19,8 @@
 
 #import "AMQPChannel.h"
 
-# import <amqp.h>
-# import <amqp_framing.h>
+#import "amqp.h"
+#import "amqp_framing.h"
 
 @implementation AMQPChannel
 
@@ -40,14 +40,12 @@
 - (void)dealloc
 {
 	[self close];
-	[connection release];
 	
-	[super dealloc];
 }
 
 - (void)openChannel:(unsigned int)theChannel onConnection:(AMQPConnection*)theConnection
 {
-	connection = [theConnection retain];
+	connection = theConnection;
 	channel = theChannel;
 	
 	amqp_channel_open(connection.internalConnection, channel);
@@ -56,7 +54,9 @@
 }
 - (void)close
 {
-	amqp_channel_close(connection.internalConnection, channel, AMQP_REPLY_SUCCESS);
+    if (connection) {
+        amqp_channel_close(connection.internalConnection, channel, AMQP_REPLY_SUCCESS);
+    }
 }
 
 @end

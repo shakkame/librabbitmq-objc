@@ -19,10 +19,8 @@
 
 #import "AMQPExchange.h"
 
-# import <amqp.h>
-# import <amqp_framing.h>
-
-# import "config.h"
+# import "amqp.h"
+# import "amqp_framing.h"
 # import "AMQPChannel.h"
 
 @implementation AMQPExchange
@@ -33,34 +31,32 @@
 {
 	if(self = [super init])
 	{
-		amqp_exchange_declare(theChannel.connection.internalConnection, theChannel.internalChannel, amqp_cstring_bytes([theName UTF8String]), amqp_cstring_bytes([theType UTF8String]), passive, durable, autoDelete, AMQP_EMPTY_TABLE);
+		amqp_exchange_declare(theChannel.connection.internalConnection, theChannel.internalChannel, amqp_cstring_bytes([theName UTF8String]), amqp_cstring_bytes([theType UTF8String]), passive, durable, AMQP_EMPTY_TABLE);
 		
 		[theChannel.connection checkLastOperation:@"Failed to declare exchange"];
 		
 		exchange = amqp_bytes_malloc_dup(amqp_cstring_bytes([theName UTF8String]));
-		channel = [theChannel retain];
+		channel = theChannel;
 	}
 	
 	return self;
 }
 - (id)initDirectExchangeWithName:(NSString*)theName onChannel:(AMQPChannel*)theChannel isPassive:(BOOL)passive isDurable:(BOOL)durable getsAutoDeleted:(BOOL)autoDelete
 {
-	return [self initExchangeOfType:AMQP_EXCHANGE_TYPE_DIRECT withName:theName onChannel:theChannel isPassive:passive isDurable:durable getsAutoDeleted:autoDelete];
+	return [self initExchangeOfType:@"direct" withName:theName onChannel:theChannel isPassive:passive isDurable:durable getsAutoDeleted:autoDelete];
 }
 - (id)initFanoutExchangeWithName:(NSString*)theName onChannel:(AMQPChannel*)theChannel isPassive:(BOOL)passive isDurable:(BOOL)durable getsAutoDeleted:(BOOL)autoDelete
 {
-	return [self initExchangeOfType:AMQP_EXCHANGE_TYPE_FANOUT withName:theName onChannel:theChannel isPassive:passive isDurable:durable getsAutoDeleted:autoDelete];
+	return [self initExchangeOfType:@"fanout" withName:theName onChannel:theChannel isPassive:passive isDurable:durable getsAutoDeleted:autoDelete];
 }
 - (id)initTopicExchangeWithName:(NSString*)theName onChannel:(AMQPChannel*)theChannel isPassive:(BOOL)passive isDurable:(BOOL)durable getsAutoDeleted:(BOOL)autoDelete
 {
-	return [self initExchangeOfType:AMQP_EXCHANGE_TYPE_TOPIC withName:theName onChannel:theChannel isPassive:passive isDurable:durable getsAutoDeleted:autoDelete];
+	return [self initExchangeOfType:@"topic" withName:theName onChannel:theChannel isPassive:passive isDurable:durable getsAutoDeleted:autoDelete];
 }
 - (void)dealloc
 {
 	amqp_bytes_free(exchange);
-	[channel release];
 	
-	[super dealloc];
 }
 
 - (void)publishMessage:(NSString*)body usingRoutingKey:(NSString*)theRoutingKey

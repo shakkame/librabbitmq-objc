@@ -17,21 +17,15 @@
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#import <Cocoa/Cocoa.h>
+#import <Foundation/Foundation.h>
 
-# import <amqp.h>
+#import "amqp.h"
 
-# import "AMQPObject.h"
+#import "AMQPObject.h"
 
 @class AMQPChannel;
 
 @interface AMQPConnection : AMQPObject
-{
-	amqp_connection_state_t connection;
-	int socketFD;
-	
-	unsigned int nextChannel;
-}
 
 @property (readonly) amqp_connection_state_t internalConnection;
 
@@ -39,7 +33,7 @@
 - (void)dealloc;
 
 - (void)connectToHost:(NSString*)host onPort:(int)port;
-- (void)loginAsUser:(NSString*)username withPasswort:(NSString*)password onVHost:(NSString*)vhost;
+- (void)loginAsUser:(NSString*)username withPassword:(NSString*)password onVHost:(NSString*)vhost;
 - (void)disconnect; // all channels have to be closed before closing the connection
 
 - (void)checkLastOperation:(NSString*)context;

@@ -17,11 +17,11 @@
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#import <Cocoa/Cocoa.h>
+#import <Foundation/Foundation.h>
 
-# import <amqp.h>
+#import "amqp.h"
 
-# import "AMQPObject.h"
+#import "AMQPObject.h"
 
 @class AMQPChannel;
 @class AMQPQueue;
@@ -29,15 +29,15 @@
 
 @interface AMQPConsumer : AMQPObject
 {
-	AMQPChannel *channel;
-	AMQPQueue *queue;
+	AMQPChannel *__weak channel;
+	AMQPQueue *__weak queue;
 	
 	amqp_bytes_t consumer;
 }
 
 @property (readonly) amqp_bytes_t internalConsumer;
-@property (readonly) AMQPChannel *channel;
-@property (readonly) AMQPQueue *queue;
+@property (weak, readonly) AMQPChannel *channel;
+@property (weak, readonly) AMQPQueue *queue;
 
 - (id)initForQueue:(AMQPQueue*)theQueue onChannel:(AMQPChannel*)theChannel useAcknowledgements:(BOOL)ack isExclusive:(BOOL)exclusive receiveLocalMessages:(BOOL)local;
 - (void)dealloc;

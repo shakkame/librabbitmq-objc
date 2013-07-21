@@ -19,11 +19,22 @@
 
 #import "AMQPConnection.h"
 
-# import <amqp.h>
-# import <amqp_framing.h>
+# import "amqp.h"
+# import "amqp_framing.h"
+# import "amqp_socket.h"
+# import "amqp_tcp_socket.h"
 # import <unistd.h>
 
 # import "AMQPChannel.h"
+
+@interface AMQPConnection()
+{
+	amqp_connection_state_t connection;
+	amqp_socket_t *socket;
+    
+	unsigned int nextChannel;
+}
+@end
 
 @implementation AMQPConnection
 
@@ -31,36 +42,31 @@
 
 - (id)init
 {
-	if(self = [super init])
-	{
+	if(self = [super init]) {
 		connection = amqp_new_connection();
+        socket = amqp_tcp_socket_new();
 		nextChannel = 1;
 	}
 	
 	return self;
 }
-- (void)dealloc
-{
-	[self disconnect];
-	
+
+- (void)dealloc {
 	amqp_destroy_connection(connection);
-	
-	[super dealloc];
 }
 
-- (void)connectToHost:(NSString*)host onPort:(int)port
-{
-	socketFD = amqp_open_socket([host UTF8String], port);
+- (void)connectToHost:(NSString*)host onPort:(int)port {    
+    int open_result = amqp_socket_open(socket, [[host copy]UTF8String], port);
 	
-	if(socketFD < 0)
+	if (open_result < 0)
 	{
 		[NSException raise:@"AMQPConnectionException" format:@"Unable to open socket to host %@ on port %d", host, port];
 	}
 
-	amqp_set_sockfd(connection, socketFD);
+	amqp_set_socket(connection, socket);
 }
-- (void)loginAsUser:(NSString*)username withPasswort:(NSString*)password onVHost:(NSString*)vhost
-{
+
+- (void)loginAsUser:(NSString*)username withPassword:(NSString*)password onVHost:(NSString*)vhost {
 	amqp_rpc_reply_t reply = amqp_login(connection, [vhost UTF8String], 0, 131072, 0, AMQP_SASL_METHOD_PLAIN, [username UTF8String], [password UTF8String]);
 	
 	if(reply.reply_type != AMQP_RESPONSE_NORMAL)
@@ -68,22 +74,20 @@
 		[NSException raise:@"AMQPLoginException" format:@"Failed to login to server as user %@ on vhost %@ using password %@: %@", username, vhost, password, [self errorDescriptionForReply:reply]];
 	}
 }
-- (void)disconnect
-{
-	amqp_rpc_reply_t reply = amqp_connection_close(connection, AMQP_REPLY_SUCCESS);
+
+- (void)disconnect {
+	/*amqp_rpc_reply_t reply = */amqp_connection_close(connection, AMQP_REPLY_SUCCESS);
 	
-	if(reply.reply_type != AMQP_RESPONSE_NORMAL)
+	/*if(reply.reply_type != AMQP_RESPONSE_NORMAL)
 	{
 		[NSException raise:@"AMQPConnectionException" format:@"Unable to disconnect from host: %@", [self errorDescriptionForReply:reply]];
-	}
-	
-	close(socketFD);
+	}*/
 }
 
 - (void)checkLastOperation:(NSString*)context
 {
 	amqp_rpc_reply_t reply = amqp_get_rpc_reply(connection);
-	
+		
 	if(reply.reply_type != AMQP_RESPONSE_NORMAL)
 	{
 		[NSException raise:@"AMQPException" format:@"%@: %@", context, [self errorDescriptionForReply:reply]];
@@ -97,7 +101,7 @@
 	
 	nextChannel++;
 
-	return [channel autorelease];
+	return channel;
 }
 
 @end

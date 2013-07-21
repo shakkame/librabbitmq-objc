@@ -17,22 +17,22 @@
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#import <Cocoa/Cocoa.h>
+#import <Foundation/Foundation.h>
 
-# import <amqp.h>
+#import "amqp.h"
 
-# import "AMQPConnection.h"
-# import "AMQPObject.h"
+#import "AMQPConnection.h"
+#import "AMQPObject.h"
 
 
 @interface AMQPChannel : AMQPObject
 {
 	amqp_channel_t channel;
-	AMQPConnection *connection;
+	AMQPConnection *__weak connection;
 }
 
 @property (readonly) amqp_channel_t internalChannel;
-@property (readonly) AMQPConnection *connection;
+@property (weak, readonly) AMQPConnection *connection;
 
 - (id)init;
 - (void)dealloc;

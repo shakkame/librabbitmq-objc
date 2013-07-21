@@ -17,9 +17,9 @@
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#import <Cocoa/Cocoa.h>
+#import <Foundation/Foundation.h>
 
-# import "AMQPConsumerThreadDelegate.h"
+#import "AMQPConsumerThreadDelegate.h"
 
 @class AMQPConnection;
 @class AMQPChannel;
@@ -31,13 +31,12 @@
 {
 	AMQPConsumer *consumer;
 	
-	NSObject<AMQPConsumerThreadDelegate> *delegate;
+	NSObject<AMQPConsumerThreadDelegate> *__weak delegate;
 }
 
-@property (assign) NSObject<AMQPConsumerThreadDelegate> *delegate;
+@property (weak) NSObject<AMQPConsumerThreadDelegate> *delegate;
 
 - (id)initWithConsumer:(AMQPConsumer*)theConsumer;
-- (void)dealloc;
 
 - (void)main;
 

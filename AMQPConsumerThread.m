@@ -30,33 +30,26 @@
 {
 	if(self = [super init])
 	{
-		consumer = [theConsumer retain];
+		consumer = theConsumer;
 	}
 	
 	return self;
 }
-- (void)dealloc
-{
-	[consumer release];
-	
-	[super dealloc];
-}
 
 - (void)main
 {
-	NSAutoreleasePool *localPool;
 	
 	while(![self isCancelled])
 	{
-		localPool = [[NSAutoreleasePool alloc] init];
+		@autoreleasepool {
 		
-		AMQPMessage *message = [consumer pop];
-		if(message)
-		{
-			[delegate performSelectorOnMainThread:@selector(amqpConsumerThreadReceivedNewMessage:) withObject:message waitUntilDone:NO];
+			AMQPMessage *message = [consumer pop];
+			if(message)
+			{
+				[delegate performSelectorOnMainThread:@selector(amqpConsumerThreadReceivedNewMessage:) withObject:message waitUntilDone:NO];
+			}
+		
 		}
-		
-		[localPool drain];
 	}
 }
 
